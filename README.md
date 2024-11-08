@@ -1,73 +1,174 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# TTDN Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository contains the backend API for TTDN, with endpoints to manage company data, location divisions, and other resources. This documentation explains how to call each API endpoint.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [Overview](#overview)
+- [Setup](#setup)
+- [API Endpoints](#api-endpoints)
+  - [Crawler API](#crawler-api)
+  - [Proxy API](#proxy-api)
+  - [Division API](#division-api)
+  - [OpenAI API](#openai-api)
+  - [Company API](#company-api)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Installation
+## Overview
 
-```bash
-$ yarn install
-```
+The TTDN backend API allows clients to interact with various data, such as:
+- Crawling data based on province and page.
+- Proxy synchronization and retrieval.
+- Geographical division data (provinces, districts, wards).
+- Accessing company information by province, tax code, or specific ID.
 
-## Running the app
+## Setup
+
+To get started, clone this repository and install dependencies.
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+git clone <repo_url>
+cd ttdn-backend
+npm install
 ```
 
-## Test
+Run the application:
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+npm start
 ```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## API Endpoints
 
-## Stay in touch
+### Crawler API
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. **Crawl a specific page in a province**
+   - **Endpoint**: `GET /api/crawler/{province}/trang-{page}`
+   - **Parameters**:
+     - `province` (path, required): The province to crawl.
+     - `page` (path, required): The page number to crawl.
+   - **Description**: Retrieves data for a specific province page.
+   - **Example**: `/api/crawler/Bac-Ninh/trang-2`
 
-## License
+2. **Crawl the first page in a province**
+   - **Endpoint**: `GET /api/crawler/{province}`
+   - **Parameters**:
+     - `province` (path, required): The province to crawl.
+   - **Description**: Retrieves data for the first page of a specific province.
+   - **Example**: `/api/crawler/Bac-Ninh`
 
-Nest is [MIT licensed](LICENSE).
+---
+
+### Proxy API
+
+1. **Synchronize Address**
+   - **Endpoint**: `GET /proxy/sync-address`
+   - **Description**: Synchronizes proxy addresses.
+
+2. **Synchronize Source Code**
+   - **Endpoint**: `GET /proxy/sync-source-code`
+   - **Description**: Synchronizes source code for proxy.
+
+3. **Retrieve Province Groups**
+   - **Endpoint**: `GET /proxy/province-groups`
+   - **Description**: Retrieves a list of grouped provinces.
+
+---
+
+### Division API
+
+1. **List Provinces**
+   - **Endpoint**: `GET /api/division/provinces`
+   - **Parameters**:
+     - `skip` (query, optional): Number of records to skip.
+     - `take` (query, optional): Number of records to retrieve.
+   - **Description**: Retrieves a list of provinces.
+
+2. **List Districts**
+   - **Endpoint**: `GET /api/division/districts`
+   - **Parameters**:
+     - `skip` (query, optional): Number of records to skip.
+     - `take` (query, optional): Number of records to retrieve.
+   - **Description**: Retrieves a list of districts.
+
+3. **List Wards**
+   - **Endpoint**: `GET /api/division/wards`
+   - **Parameters**:
+     - `skip` (query, optional): Number of records to skip.
+     - `take` (query, optional): Number of records to retrieve.
+   - **Description**: Retrieves a list of wards.
+
+---
+
+### OpenAI API
+
+1. **Format Address**
+   - **Endpoint**: `POST /api/openai/format-address`
+   - **Request Body**:
+     - `prompt` (string, required): The prompt for OpenAI to format the address.
+   - **Description**: Uses OpenAI to format an address based on the provided prompt.
+   - **Example Request Body**:
+     ```json
+     {
+       "prompt": "Format this address"
+     }
+     ```
+
+---
+
+### Company API
+
+1. **List Companies**
+   - **Endpoint**: `GET /api/company`
+   - **Description**: Retrieves a list of companies.
+
+2. **Count Companies**
+   - **Endpoint**: `GET /api/company/count`
+   - **Description**: Retrieves the count of companies.
+
+3. **Count Companies by Province**
+   - **Endpoint**: `GET /api/company/provinces/count`
+   - **Parameters**:
+     - `provinceId` (path, required): The ID of the province.
+     - `skip` (query, optional): Number of records to skip.
+     - `take` (query, optional): Number of records to retrieve.
+   - **Description**: Retrieves the count of companies in a specific province.
+
+4. **Search Companies by Province**
+   - **Endpoint**: `GET /api/company/provinces/{provinceId}`
+   - **Parameters**:
+     - `provinceId` (path, required): The ID of the province.
+     - `skip` (query, optional): Number of records to skip.
+     - `take` (query, optional): Number of records to retrieve.
+   - **Description**: Searches for companies within a specified province.
+
+5. **Search Company by Tax Code**
+   - **Endpoint**: `GET /api/company/tax-code/{taxCode}`
+   - **Parameters**:
+     - `taxCode` (path, required): The tax code of the company.
+   - **Description**: Retrieves company details based on a tax code.
+
+6. **Get Company by ID**
+   - **Endpoint**: `GET /api/company/{id}`
+   - **Parameters**:
+     - `id` (path, required): The unique identifier of the company.
+   - **Description**: Retrieves company information by ID.
+
+---
+
+## Response Format
+
+All endpoints return responses in JSON format. Specific response fields depend on the endpoint and its purpose.
+
+---
+
+## Contact
+
+For further questions or issues, please reach out to the project maintainers.
+
+---
+
+This README file provides a complete guide to calling each API endpoint in the TTDN backend. For additional details or complex queries, refer to the full Swagger documentation if available.
