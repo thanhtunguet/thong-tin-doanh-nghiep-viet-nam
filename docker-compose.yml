@@ -1,0 +1,13 @@
+services:
+  ttdn:
+    image: thanhtunguet/ttdn:latest
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    networks:
+      - ttdn
+
+networks:
+  ttdn:
+    driver: bridge
