@@ -1,0 +1,1 @@
+706:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.District'; column does not allow nulls. INSERT fails.

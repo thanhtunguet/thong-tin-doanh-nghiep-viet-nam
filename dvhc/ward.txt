@@ -1,0 +1,5 @@
+3790:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.Ward'; column does not allow nulls. INSERT fails.
+6131:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.Ward'; column does not allow nulls. INSERT fails.
+6329:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.Ward'; column does not allow nulls. INSERT fails.
+6744:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.Ward'; column does not allow nulls. INSERT fails.
+8578:1: Cannot insert the value NULL into column 'Id', table 'TTDN.dbo.Ward'; column does not allow nulls. INSERT fails.

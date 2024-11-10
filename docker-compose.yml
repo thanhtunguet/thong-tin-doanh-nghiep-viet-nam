@@ -1,0 +1,15 @@
+services:
+  ttdn:
+    image: thanhtunguet/ttdn:v1.0.1
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    networks:
+      - ttdn
+    volumes:
+      - ./companies.log:/app/companies.log
+
+networks:
+  ttdn:
+    driver: bridge
