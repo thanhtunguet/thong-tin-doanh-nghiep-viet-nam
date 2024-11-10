@@ -4,7 +4,6 @@ echo "Generating data..."
 source .env
 
 yarn typeorm-model-generator -e mssql -h $DB_HOST -d $DB_NAME -u $DB_USER -x $DB_PASSWORD
-rm -rf src/_entities/
 mv output/entities/ src/_entities/
 yarn node-index update src/_entities/
 rm -rf output/
