@@ -1,9 +1,10 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
-import { Company, ProvinceGroup } from 'src/_entities';
+import { Company } from 'src/_entities';
 import { InfoRepository } from 'src/_repositories/info-repository';
 import { CrawlerService } from './crawler.service';
+import { ProvinceGroupDto } from './dtos/province-group.dto';
 
 @ApiTags('Crawler')
 @Controller('/api/crawler')
@@ -14,7 +15,11 @@ export class CrawlerController {
   ) {}
 
   @Get('/province-groups')
-  public async provinceGroups(): Promise<ProvinceGroup[]> {
+  @ApiResponse({
+    type: ProvinceGroupDto,
+    isArray: true,
+  })
+  public async provinceGroups(): Promise<ProvinceGroupDto[]> {
     return this.crawlerService.getProvinceGroups();
   }
 

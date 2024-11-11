@@ -3,6 +3,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryDto } from '../_dtos/query.dto';
 import { Company, District, Province, Ward } from '../_entities';
 import { DivisionService } from './division.service';
+import { QAPairDto } from './dtos/qr-pair';
 
 @ApiTags('Division')
 @Controller('/api/division')
@@ -19,17 +20,23 @@ export class DivisionController {
   }
 
   @Get('/provinces/:provinceId')
-  public async getProvince(@Param('provinceId') provinceId: number): Promise<Province> {
+  public async getProvince(
+    @Param('provinceId') provinceId: number,
+  ): Promise<Province> {
     return this.divisionService.getProvince(provinceId);
   }
 
   @Get('/provinces/:provinceId/companies')
-  public async provinceCompanies(@Param('provinceId') provinceId: number): Promise<Company[]> {
+  public async provinceCompanies(
+    @Param('provinceId') provinceId: number,
+  ): Promise<Company[]> {
     return this.divisionService.getCompaniesOfProvince(provinceId);
   }
 
   @Get('/provinces/:provinceId/districts')
-  public async provinceDistricts(@Param('provinceId') provinceId: number): Promise<District[]> {
+  public async provinceDistricts(
+    @Param('provinceId') provinceId: number,
+  ): Promise<District[]> {
     return this.divisionService.getDistrictsOfProvince(provinceId);
   }
 
@@ -43,17 +50,23 @@ export class DivisionController {
   }
 
   @Get('/districts/:districtId')
-  public async getDistrict(@Param('districtId') districtId: number): Promise<District> {
+  public async getDistrict(
+    @Param('districtId') districtId: number,
+  ): Promise<District> {
     return this.divisionService.getDistrict(districtId);
   }
 
   @Get('/districts/:districtId/companies')
-  public async districtCompanies(@Param('districtId') districtId: number): Promise<Company[]> {
+  public async districtCompanies(
+    @Param('districtId') districtId: number,
+  ): Promise<Company[]> {
     return this.divisionService.getCompaniesOfDistrict(districtId);
   }
 
   @Get('/districts/:districtId/wards')
-  public async districtWards(@Param('districtId') districtId: number): Promise<Ward[]> {
+  public async districtWards(
+    @Param('districtId') districtId: number,
+  ): Promise<Ward[]> {
     return this.divisionService.getWardsOfDistrict(districtId);
   }
 
@@ -72,7 +85,14 @@ export class DivisionController {
   }
 
   @Get('/wards/:wardId/companies')
-  public async wardCompanies(@Param('wardId') wardId: number): Promise<Company[]> {
+  public async wardCompanies(
+    @Param('wardId') wardId: number,
+  ): Promise<Company[]> {
     return this.divisionService.getCompaniesOfWard(wardId);
+  }
+
+  @Get('/extract-data')
+  public async extractData(): Promise<QAPairDto[]> {
+    return this.divisionService.extractData();
   }
 }
