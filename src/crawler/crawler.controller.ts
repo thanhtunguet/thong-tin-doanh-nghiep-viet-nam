@@ -1,18 +1,45 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, OnApplicationBootstrap, Param } from '@nestjs/common';
+import {
+  Client,
+  ClientProxy,
+  MessagePattern,
+  Transport,
+} from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
+import { AppMode, MODE, MQTT_URL } from 'src/_config/dotenv';
 import { Company } from 'src/_entities';
 import { InfoRepository } from 'src/_repositories/info-repository';
 import { CrawlerService } from './crawler.service';
 import { ProvinceGroupDto } from './dtos/province-group.dto';
 
+enum CrawlerMessagePattern {
+  CRAWL_PAGE = 'CRAWL_PAGE',
+  CRAWL_COMPANY = 'CRAWL_COMPANY',
+}
+
 @ApiTags('Crawler')
 @Controller('/api/crawler')
-export class CrawlerController {
+export class CrawlerController implements OnApplicationBootstrap {
+  @Client({
+    transport: Transport.MQTT,
+    options: {
+      url: MQTT_URL,
+    },
+  })
+  private client: ClientProxy;
+
   constructor(
     private readonly crawlerService: CrawlerService,
     private readonly infoRepository: InfoRepository,
   ) {}
+
+  async onApplicationBootstrap() {
+    if (MODE === AppMode.CRAWLER) {
+      await this.client.connect();
+      console.log('Crawler is connected to MQTT');
+    }
+  }
 
   @Get('/province-groups')
   @ApiResponse({
@@ -38,5 +65,19 @@ export class CrawlerController {
   public async crawlCompany(@Param('company') company: string) {
     const html = await firstValueFrom(this.infoRepository.company(company));
     return this.crawlerService.crawlCompany(html);
+  }
+
+  @MessagePattern(CrawlerMessagePattern.CRAWL_PAGE)
+  public async handleCrawlPagePattern() {
+    return this.crawlerService.handleCrawlPagePattern();
+  }
+
+  @Get('/trigger')
+  public async trigger() {
+    await this.client.emit(CrawlerMessagePattern.CRAWL_PAGE, {
+      province: 'TP.HCM',
+      page: 1,
+    });
+    return 'All jobs have been triggered';
   }
 }

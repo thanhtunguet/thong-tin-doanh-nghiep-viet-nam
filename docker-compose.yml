@@ -1,6 +1,6 @@
 services:
-  ttdn:
-    image: thanhtunguet/ttdn:v1.0.1
+  web:
+    image: thanhtunguet/ttdn:v1.0.6
     ports:
       - 3000:3000
     env_file:
@@ -9,7 +9,16 @@ services:
       - ttdn
     volumes:
       - ./companies.log:/app/companies.log
-
+    command: yarn start:prod
+  crawler:
+    image: thanhtunguet/ttdn:v1.0.6
+    env_file:
+      - .env.crawler
+    networks:
+      - ttdn
+    depends_on:
+      - web
+    command: yarn start:crawler:prod
 networks:
   ttdn:
     driver: bridge

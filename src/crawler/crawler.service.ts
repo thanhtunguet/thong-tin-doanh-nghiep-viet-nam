@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CheerioAPI } from 'cheerio';
 import * as fs from 'fs';
 import * as moment from 'moment';
+import { sleep } from 'openai/core';
 import { firstValueFrom } from 'rxjs';
 import { WEB_URL } from 'src/_config/dotenv';
 import { Business, Company, Province, ProvinceGroup } from 'src/_entities';
@@ -294,5 +296,21 @@ export class CrawlerService implements ICrawlerService {
       fs.appendFileSync('companies.log', error.toString());
     }
     return companies;
+  }
+
+  public async handleCrawlPagePattern() {
+    const provinceGroups = await this.provinceGroupRepository.find();
+    for (const group of provinceGroups) {
+      for (let i = 1; i <= group.pages; i++) {
+        await axios
+          .get(new URL(`/${group.code}/trang-${i}/`, WEB_URL).toString())
+          .catch(() => {
+            console.log(`Failed to crawl ${group.code}/trang-${i}/`);
+          });
+        const ms = Math.random() * 500;
+        console.log(`Sleeping for ${ms}ms`);
+        await sleep(ms);
+      }
+    }
   }
 }
