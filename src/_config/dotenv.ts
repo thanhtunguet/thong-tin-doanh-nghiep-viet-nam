@@ -25,3 +25,5 @@ export const MQTT_URL = process.env.MQTT_URL;
 
 export const MODE = process.env.MODE as AppMode;
 export const PORT = Number(process.env.PORT ?? 3000);
+export const SLEEP_GAP = Number(process.env.SLEEP_GAP ?? 500);
+export const SLEEP_MIN = Number(process.env.SLEEP_MIN ?? 500);

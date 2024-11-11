@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as moment from 'moment';
 import { sleep } from 'openai/core';
 import { firstValueFrom } from 'rxjs';
-import { WEB_URL } from 'src/_config/dotenv';
+import { SLEEP_GAP, SLEEP_MIN, WEB_URL } from 'src/_config/dotenv';
 import { Business, Company, Province, ProvinceGroup } from 'src/_entities';
 import { splitArrayByLength } from 'src/_helpers/array';
 import { vietnameseSlugify } from 'src/_helpers/slugify';
@@ -307,7 +307,7 @@ export class CrawlerService implements ICrawlerService {
           .catch(() => {
             console.log(`Failed to crawl ${group.code}/trang-${i}/`);
           });
-        const ms = Math.random() * 500;
+        const ms = Math.random() * SLEEP_GAP + SLEEP_MIN;
         console.log(`Sleeping for ${ms}ms`);
         await sleep(ms);
       }
