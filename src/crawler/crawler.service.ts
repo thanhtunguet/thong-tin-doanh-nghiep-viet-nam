@@ -295,6 +295,7 @@ export class CrawlerService implements ICrawlerService {
       fs.appendFileSync('companies.log', '\n');
       fs.appendFileSync('companies.log', error.toString());
     }
+
     return companies;
   }
 
@@ -312,5 +313,29 @@ export class CrawlerService implements ICrawlerService {
         await sleep(ms);
       }
     }
+  }
+
+  public async addCompanies(companies: Company[]) {
+    try {
+      await this.companyRepository.delete({
+        id: In(companies.map((c) => c.id)),
+      });
+    } catch (error) {
+      console.error(
+        `Error deleting companies: ${companies.map((c) => c.id).join(', ')}`,
+        error,
+      );
+    }
+    await this.companyRepository
+      .save(companies)
+      .then(() => {
+        console.log(`Saved ${companies.length} companies`);
+      })
+      .catch((error) => {
+        console.error(
+          `Error saving companies: ${companies.map((c) => c.id).join(', ')}`,
+          error,
+        );
+      });
   }
 }

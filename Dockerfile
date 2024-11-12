@@ -1,4 +1,5 @@
-FROM node:18-alpine AS production
+FROM thanhtunguet/node-with-selenium:latest
+
 WORKDIR /app
 COPY dist/ ./dist/
 COPY package.json yarn.lock ./

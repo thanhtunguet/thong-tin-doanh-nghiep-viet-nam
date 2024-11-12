@@ -1,11 +1,20 @@
-import { Controller, Get, OnApplicationBootstrap, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  OnApplicationBootstrap,
+  Param,
+  Post,
+  Req,
+} from '@nestjs/common';
 import {
   Client,
   ClientProxy,
   MessagePattern,
   Transport,
 } from '@nestjs/microservices';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { AppMode, MODE, MQTT_URL } from 'src/_config/dotenv';
 import { Company } from 'src/_entities';
@@ -39,6 +48,11 @@ export class CrawlerController implements OnApplicationBootstrap {
       await this.client.connect();
       console.log('Crawler is connected to MQTT');
     }
+  }
+
+  @Post('/add-companies')
+  public async addCompanies(@Body() companies: Company[]) {
+    return this.crawlerService.addCompanies(companies);
   }
 
   @Get('/province-groups')

@@ -1,6 +1,6 @@
 services:
   web:
-    image: thanhtunguet/ttdn:v1.0.6
+    image: thanhtunguet/ttdn:latest
     ports:
       - 3000:3000
     env_file:
@@ -11,7 +11,7 @@ services:
       - ./companies.log:/app/companies.log
     command: yarn start:prod
   crawler:
-    image: thanhtunguet/ttdn:v1.0.6
+    image: thanhtunguet/ttdn:latest
     env_file:
       - .env.crawler
     networks:

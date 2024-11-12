@@ -43,10 +43,7 @@ export class CompanyService {
 
   public async getByIdOrTaxCode(idOrTaxCode: string): Promise<Company> {
     return this.companyRepository.findOne({
-      where: [
-        { id: Number(idOrTaxCode) },   
-        { taxCode: idOrTaxCode },   
-      ],
-    })
+      where: [{ id: Number(idOrTaxCode) }, { taxCode: idOrTaxCode }],
+    });
   }
 }
