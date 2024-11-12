@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: node-with-selenium
-          file: Dockerfile
+          file: node-with-selenium/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
