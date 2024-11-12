@@ -47,7 +47,7 @@ jobs:
         with:
           context: node-with-selenium
           file: Dockerfile
-          platforms: linux/arm64,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/node-with-selenium:latest
@@ -57,7 +57,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          platforms: linux/arm64,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/ttdn:latest
