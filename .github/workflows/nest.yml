@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
+      - dev
 
   pull_request:
     branches:
@@ -22,7 +25,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Dependencies
+      - name: Build Node.js
         run: |
           yarn install --development
           yarn build
