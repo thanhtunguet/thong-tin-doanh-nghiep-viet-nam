@@ -25,6 +25,14 @@ export interface ICrawlerService {
   saveProvinceGroups(groups: ProvinceGroup[]): Promise<void>;
 }
 
+interface ProvinceInfo {
+  province: string;
+
+  start: number;
+
+  end: number;
+}
+
 @Injectable()
 export class CrawlerService implements ICrawlerService {
   static PAGE_SIZE = 20;
@@ -323,22 +331,29 @@ export class CrawlerService implements ICrawlerService {
       (a, b) => b.pages - a.pages,
     );
 
-    const chunks: ProvinceGroup[][] = [];
-    chunks[0] = [provinceGroups[0]];
-    chunks[1] = [provinceGroups[1]];
+    const infoList: ProvinceInfo[] = [];
+    const GAP = 2000;
+    provinceGroups.slice(0, 2).forEach((group) => {
+      for (let i = 8000; i <= group.pages; i += GAP) {
+        infoList.push({
+          province: group.code,
+          start: i,
+          end: Math.min(i + GAP, group.pages),
+        });
+      }
+    });
 
-    chunks[2] = provinceGroups.slice(2, 8);
-    chunks[3] = provinceGroups.slice(8, 14);
-    chunks[4] = provinceGroups.slice(14, 40);
-    chunks[5] = provinceGroups.slice(40, 63);
+    const chunks = splitArrayByLength(infoList, 3);
+
+    console.log(chunks);
 
     await Promise.all(
       chunks.map(async (chunk) => {
         const driver = await new Builder().forBrowser('chrome').build(); // Or use 'chrome'
-        for (const group of chunk) {
-          for (let i = 1; i <= group.pages; i++) {
+        for (const info of chunk) {
+          for (let i = info.start; i <= info.end; i++) {
             const url = new URL(
-              `/${group.code}/trang-${i}/`,
+              `/${info.province}/trang-${i}/`,
               SOURCE_URL,
             ).toString();
             try {
@@ -346,7 +361,6 @@ export class CrawlerService implements ICrawlerService {
               const html = await driver.getPageSource();
               await this.crawlPage(html);
               const ms = Math.random() * SLEEP_GAP + SLEEP_MIN;
-              console.log(`Sleeping for ${ms}ms`);
               await sleep(ms);
             } catch (error) {
               console.error(`Error crawling ${url}`);
