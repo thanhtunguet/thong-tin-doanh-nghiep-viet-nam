@@ -38,6 +38,6 @@ import { OpenaiModule } from './openai/openai.module';
   ],
   controllers: [AppController],
   providers: [AppService, StaticRepository],
-  exports: [AppService],
+  exports: [],
 })
 export class AppModule {}

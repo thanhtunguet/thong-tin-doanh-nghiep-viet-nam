@@ -7,7 +7,7 @@ import { StaticRepository } from './_repositories/static-repository';
 
 @Injectable()
 export class AppService {
-  constructor(
+  public constructor(
     private readonly infoRepository: InfoRepository,
     private readonly staticRepository: StaticRepository,
   ) {}

@@ -7,7 +7,8 @@ import * as fs from 'fs';
 import * as moment from 'moment';
 import { sleep } from 'openai/core';
 import { firstValueFrom } from 'rxjs';
-import { SLEEP_GAP, SLEEP_MIN, WEB_URL } from 'src/_config/dotenv';
+import { Builder } from 'selenium-webdriver';
+import { SLEEP_GAP, SLEEP_MIN, SOURCE_URL, WEB_URL } from 'src/_config/dotenv';
 import { Business, Company, Province, ProvinceGroup } from 'src/_entities';
 import { splitArrayByLength } from 'src/_helpers/array';
 import { vietnameseSlugify } from 'src/_helpers/slugify';
@@ -282,15 +283,17 @@ export class CrawlerService implements ICrawlerService {
       }
     });
 
+    const companyIds = companies.map((c) => c.id);
+
     await this.companyRepository.delete({
-      id: In(companies.map((c) => c.id)),
+      id: In(companyIds),
     });
 
     try {
       await this.companyRepository.save(companies);
       console.log(`Saved ${companies.length} companies`);
     } catch (error) {
-      console.error(`Error saving companies: ${companies.map((c) => c.id)}`);
+      console.error(`Error saving companies: ${companyIds.join(', ')}`);
       fs.appendFileSync('companies.log', JSON.stringify(companies, null, 2));
       fs.appendFileSync('companies.log', '\n');
       fs.appendFileSync('companies.log', error.toString());
@@ -315,14 +318,54 @@ export class CrawlerService implements ICrawlerService {
     }
   }
 
-  public async addCompanies(companies: Company[]) {
+  public async handleCrawlPagePatternWeb() {
+    const provinceGroups = (await this.provinceGroupRepository.find()).sort(
+      (a, b) => b.pages - a.pages,
+    );
+
+    const chunks: ProvinceGroup[][] = [];
+    chunks[0] = [provinceGroups[0]];
+    chunks[1] = [provinceGroups[1]];
+
+    chunks[2] = provinceGroups.slice(2, 8);
+    chunks[3] = provinceGroups.slice(8, 14);
+    chunks[4] = provinceGroups.slice(14, 40);
+    chunks[5] = provinceGroups.slice(40, 63);
+
+    await Promise.all(
+      chunks.map(async (chunk) => {
+        const driver = await new Builder().forBrowser('chrome').build(); // Or use 'chrome'
+        for (const group of chunk) {
+          for (let i = 1; i <= group.pages; i++) {
+            const url = new URL(
+              `/${group.code}/trang-${i}/`,
+              SOURCE_URL,
+            ).toString();
+            try {
+              await driver.get(url);
+              const html = await driver.getPageSource();
+              await this.crawlPage(html);
+              const ms = Math.random() * SLEEP_GAP + SLEEP_MIN;
+              console.log(`Sleeping for ${ms}ms`);
+              await sleep(ms);
+            } catch (error) {
+              console.error(`Error crawling ${url}`);
+            }
+          }
+        }
+      }),
+    );
+  }
+
+  public async saveCompanies(companies: Company[]) {
+    const companyIds = companies.map((c) => c.id);
     try {
       await this.companyRepository.delete({
-        id: In(companies.map((c) => c.id)),
+        id: In(companyIds),
       });
     } catch (error) {
       console.error(
-        `Error deleting companies: ${companies.map((c) => c.id).join(', ')}`,
+        `Error deleting companies: ${companyIds.join(', ')}`,
         error,
       );
     }
@@ -332,10 +375,11 @@ export class CrawlerService implements ICrawlerService {
         console.log(`Saved ${companies.length} companies`);
       })
       .catch((error) => {
-        console.error(
-          `Error saving companies: ${companies.map((c) => c.id).join(', ')}`,
-          error,
-        );
+        const errorMessage = `Error saving companies: ${companyIds.join(', ')}`;
+        console.error(errorMessage);
+        fs.appendFileSync('companies.log', errorMessage);
+        fs.appendFileSync('companies.log', '\n');
+        fs.appendFileSync('companies.log', `${error.toString()}\n`);
       });
   }
 }

@@ -1,24 +1,27 @@
 services:
   web:
     image: thanhtunguet/ttdn:latest
+    volumes:
+      - ./companies.log:/app/companies.log
+      - ./dist:/app/dist:ro
     ports:
       - 3000:3000
     env_file:
       - .env
     networks:
       - ttdn
-    volumes:
-      - ./companies.log:/app/companies.log
     command: yarn start:prod
-  crawler:
-    image: thanhtunguet/ttdn:latest
-    env_file:
-      - .env.crawler
-    networks:
-      - ttdn
-    depends_on:
-      - web
-    command: yarn start:crawler:prod
+  # crawler:
+  #   image: thanhtunguet/ttdn:latest
+  #   env_file:
+  #     - .env.crawler
+  #   networks:
+  #     - ttdn
+  #   depends_on:
+  #     - web
+  #   command: yarn start:crawler:prod
+  #   volumes:
+  #     - ./dist:/app/dist:ro
 networks:
   ttdn:
     driver: bridge

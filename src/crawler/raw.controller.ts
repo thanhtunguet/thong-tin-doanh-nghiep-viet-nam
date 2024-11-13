@@ -1,9 +1,9 @@
 import { Controller, Post, Req } from '@nestjs/common';
-import { CrawlerService } from './crawler.service';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { CrawlerService } from './crawler.service';
 
-@ApiTags('CrawlerRawMethods')
+@ApiTags('CrawlerRaw')
 @Controller('/api/crawler')
 export class RawController {
   constructor(private readonly crawlerService: CrawlerService) {}

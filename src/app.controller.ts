@@ -37,7 +37,6 @@ export class AppController {
 
   @Get('/:province')
   public async proxyProvince(
-    @Param('province') province: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -49,8 +48,6 @@ export class AppController {
 
   @Get('/:province/trang-:page/')
   public async proxyProvincePage(
-    @Param('province') province: string,
-    @Param('page') page: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -62,8 +59,6 @@ export class AppController {
 
   @Get('/:province/:district')
   public async proxyDistrict(
-    @Param('province') province: string,
-    @Param('district') district: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -75,9 +70,6 @@ export class AppController {
 
   @Get('/:province/:district/trang-:page/')
   public async proxyDistrictPage(
-    @Param('province') province: string,
-    @Param('district') district: string,
-    @Param('page') page: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,

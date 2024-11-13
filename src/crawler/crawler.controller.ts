@@ -5,7 +5,6 @@ import {
   OnApplicationBootstrap,
   Param,
   Post,
-  Req,
 } from '@nestjs/common';
 import {
   Client,
@@ -13,8 +12,7 @@ import {
   MessagePattern,
   Transport,
 } from '@nestjs/microservices';
-import { ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { AppMode, MODE, MQTT_URL } from 'src/_config/dotenv';
 import { Company } from 'src/_entities';
@@ -24,6 +22,7 @@ import { ProvinceGroupDto } from './dtos/province-group.dto';
 
 enum CrawlerMessagePattern {
   CRAWL_PAGE = 'CRAWL_PAGE',
+  CRAWL_PAGE_WEB = 'CRAWL_PAGE_WEB',
   CRAWL_COMPANY = 'CRAWL_COMPANY',
 }
 
@@ -50,9 +49,21 @@ export class CrawlerController implements OnApplicationBootstrap {
     }
   }
 
-  @Post('/add-companies')
-  public async addCompanies(@Body() companies: Company[]) {
-    return this.crawlerService.addCompanies(companies);
+  @Post('/save-companies')
+  @ApiBody({
+    type: Company,
+    isArray: true,
+  })
+  public async saveCompanies(@Body() companies: Company[]) {
+    return this.crawlerService.saveCompanies(companies);
+  }
+
+  @Post('/save-company')
+  @ApiBody({
+    type: Company,
+  })
+  public async saveCompanyDetail(@Body() company: Company) {
+    return this.crawlerService.saveCompany(company);
   }
 
   @Get('/province-groups')
@@ -86,9 +97,20 @@ export class CrawlerController implements OnApplicationBootstrap {
     return this.crawlerService.handleCrawlPagePattern();
   }
 
-  @Get('/trigger')
-  public async trigger() {
-    await this.client.emit(CrawlerMessagePattern.CRAWL_PAGE, {
+  @MessagePattern(CrawlerMessagePattern.CRAWL_PAGE_WEB)
+  public async handleCrawlPagePatternWeb() {
+    return this.crawlerService.handleCrawlPagePatternWeb();
+  }
+
+  @Get('/trigger-all')
+  public async triggerAll() {
+    await this.client.emit(CrawlerMessagePattern.CRAWL_PAGE, {});
+    return 'All jobs have been triggered';
+  }
+
+  @Get('/trigger-web')
+  public async triggerWeb() {
+    await this.client.emit(CrawlerMessagePattern.CRAWL_PAGE_WEB, {
       province: 'TP.HCM',
       page: 1,
     });

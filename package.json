@@ -46,7 +46,8 @@
     "rxjs": "^7.8.1",
     "selenium-webdriver": "^4.26.0",
     "slugify": "^1.6.6",
-    "typeorm": "^0.3.17"
+    "typeorm": "^0.3.17",
+    "webdriver-manager": "^12.1.9"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
