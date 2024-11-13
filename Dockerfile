@@ -1,4 +1,4 @@
-FROM thanhtunguet/node-with-selenium:latest
+FROM node:18-alpine
 
 WORKDIR /app
 COPY dist/ ./dist/
