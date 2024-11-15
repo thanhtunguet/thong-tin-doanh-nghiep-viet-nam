@@ -231,7 +231,7 @@ export class CrawlerService {
   public async crawlPage(html: string) {
     const provinces = await this.provinceRepository.find();
     const provinceMap = Object.fromEntries(
-      provinces.map((p) => [p.sourceCode.toLowerCase(), p]),
+      provinces.map((p) => [p.slug.toLowerCase(), p]),
     );
 
     const $ = cheerio.load(html);

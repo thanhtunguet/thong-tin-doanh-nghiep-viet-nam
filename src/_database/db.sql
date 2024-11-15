@@ -56,7 +56,7 @@ create table Province
     UpdatedAt   datetime default getdate(),
     DeletedAt   datetime,
     EnglishName nvarchar(500),
-    SourceCode  nvarchar(255)
+    Slug  nvarchar(255)
 )
 go
 

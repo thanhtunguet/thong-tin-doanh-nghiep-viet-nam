@@ -56,6 +56,9 @@ export class District {
   @Column('nvarchar', { name: 'EnglishName', nullable: true, length: 500 })
   englishName: string | null;
 
+  @Column('nvarchar', { name: 'Slug', nullable: true, length: 255 })
+  slug: string | null;
+
   @OneToMany(() => Company, (company) => company.district)
   companies: Company[];
 

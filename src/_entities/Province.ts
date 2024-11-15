@@ -46,8 +46,8 @@ export class Province {
   @Column('nvarchar', { name: 'EnglishName', nullable: true, length: 500 })
   englishName: string | null;
 
-  @Column('nvarchar', { name: 'SourceCode', nullable: true, length: 255 })
-  sourceCode: string | null;
+  @Column('nvarchar', { name: 'Slug', nullable: true, length: 255 })
+  slug: string | null;
 
   @OneToMany(() => Company, (company) => company.province)
   companies: Company[];
