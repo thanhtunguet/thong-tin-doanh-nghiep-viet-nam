@@ -1,4 +1,12 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { CompanyBusinessMapping } from './CompanyBusinessMapping';
 import { District } from './District';
 import { Province } from './Province';
 import { Ward } from './Ward';
@@ -64,8 +72,24 @@ export class Company {
   @Column('bigint', { name: 'MainBusinessId', nullable: true })
   mainBusinessId: number | null;
 
-  @Column('nvarchar', { name: 'SourceLink', nullable: true, length: 2048 })
-  sourceLink: string | null;
+  @Column('nvarchar', { name: 'Slug', nullable: true, length: 2048 })
+  slug: string | null;
+
+  @Column('nvarchar', {
+    name: 'FormattedAddress',
+    nullable: true,
+    length: 4000,
+  })
+  formattedAddress: string | null;
+
+  @Column('nvarchar', { name: 'ProvinceName', nullable: true, length: 255 })
+  provinceName: string | null;
+
+  @Column('nvarchar', { name: 'DistrictName', nullable: true, length: 255 })
+  districtName: string | null;
+
+  @Column('nvarchar', { name: 'WardName', nullable: true, length: 255 })
+  wardName: string | null;
 
   @ManyToOne(() => Ward, (ward) => ward.companies)
   @JoinColumn([{ name: 'WardId', referencedColumnName: 'id' }])
@@ -78,4 +102,10 @@ export class Company {
   @ManyToOne(() => Province, (province) => province.companies)
   @JoinColumn([{ name: 'ProvinceId', referencedColumnName: 'id' }])
   province: Province;
+
+  @OneToMany(
+    () => CompanyBusinessMapping,
+    (companyBusinessMapping) => companyBusinessMapping.company,
+  )
+  companyBusinessMappings: CompanyBusinessMapping[];
 }

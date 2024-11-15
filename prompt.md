@@ -1,29 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
-import {
-  OPENAI_API_KEY,
-  OPENAI_ENDPOINT,
-  OPENAI_MODEL,
-} from 'src/_config/dotenv';
-
-@Injectable()
-export class OpenaiService {
-  private readonly client: OpenAI;
-
-  constructor() {
-    this.client = new OpenAI({
-      apiKey: OPENAI_API_KEY,
-      baseURL: OPENAI_ENDPOINT,
-    });
-  }
-
-  public async formatAddress(userPrompt: string): Promise<string> {
-    const response = await this.client.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: `Bạn là trợ lý ảo về chuẩn hóa địa chỉ hành chính của Việt Nam.
+Bạn là trợ lý ảo về chuẩn hóa địa chỉ hành chính của Việt Nam.
 Khi nhận địa chỉ từ người dùng, bạn phân tích và chuyển đổi địa chỉ thành chuỗi JSON có cấu trúc theo mẫu: {province, district, ward, address}.
 
 Các yêu cầu:
@@ -85,18 +60,4 @@ Năm	Cấp	Tên đơn vị	Loại thay đổi	Đơn vị cha cũ	Đơn vị cha 
 2013	Quận	Bắc Từ Liêm	Thành lập mới từ tách		Hà Nội
 2013	Quận	Nam Từ Liêm	Thành lập mới từ tách		Hà Nội
 2020	Thành phố	Thủ Đức	Thành lập từ sáp nhập	Quận 2, Quận 9, Thủ Đức	TP. Hồ Chí Minh
-2023	Thành phố	Từ Sơn	Nâng cấp từ thị xã	Bắc Ninh	Bắc Ninh`,
-        },
-        { role: 'user', content: 'Tam Hồng, Yên Lạc, Vĩnh Phúc' },
-        {
-          role: 'assistant',
-          content:
-            '{"province":"Tỉnh Vĩnh Phúc","district":"Huyện Yên Lạc","ward":"Xã Tam Hồng"}',
-        },
-        { role: 'user', content: userPrompt },
-      ],
-    });
-
-    return response.choices[0].message.content;
-  }
-}
+2023	Thành phố	Từ Sơn	Nâng cấp từ thị xã	Bắc Ninh	Bắc Ninh
