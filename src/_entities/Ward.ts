@@ -1,14 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
-import { Company } from './Company';
-import { Province } from './Province';
-import { District } from './District';
+import { Column, Entity, Index } from 'typeorm';
 
 @Index('Ward_Id_Code_Name_index', ['id', 'code', 'name'], {})
 @Index('Ward_pk', ['id'], { unique: true })
@@ -52,17 +42,12 @@ export class Ward {
   @Column('nvarchar', { name: 'EnglishName', nullable: true, length: 500 })
   englishName: string | null;
 
+  @Column('bigint', { name: 'DistrictId', nullable: true })
+  districtId: number | null;
+
+  @Column('bigint', { name: 'ProvinceId', nullable: true })
+  provinceId: number | null;
+
   @Column('nvarchar', { name: 'Slug', nullable: true, length: 255 })
   slug: string | null;
-
-  @OneToMany(() => Company, (company) => company.ward)
-  companies: Company[];
-
-  @ManyToOne(() => Province, (province) => province.wards)
-  @JoinColumn([{ name: 'ProvinceId', referencedColumnName: 'id' }])
-  province: Province;
-
-  @ManyToOne(() => District, (district) => district.wards)
-  @JoinColumn([{ name: 'DistrictId', referencedColumnName: 'id' }])
-  district: District;
 }

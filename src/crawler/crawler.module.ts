@@ -13,8 +13,10 @@ import {
   Business,
   Company,
   CompanyBusinessMapping,
+  District,
   Province,
   ProvinceGroup,
+  Ward,
 } from '../_entities';
 import { CrawlerController } from './crawler.controller';
 import { CrawlerService } from './crawler.service';
@@ -29,6 +31,8 @@ export const MQTT_SERVICE = 'MQTT_SERVICE';
       Business,
       ProvinceGroup,
       Province,
+      District,
+      Ward,
       CompanyBusinessMapping,
     ]),
   ],

@@ -1,7 +1,4 @@
-import { Column, Entity, Index, OneToMany } from 'typeorm';
-import { Company } from './Company';
-import { District } from './District';
-import { Ward } from './Ward';
+import { Column, Entity, Index } from 'typeorm';
 
 @Index('Province_Id_Code_Name_index', ['id', 'code', 'name'], {})
 @Index('Province_pk', ['id'], { unique: true })
@@ -48,13 +45,4 @@ export class Province {
 
   @Column('nvarchar', { name: 'Slug', nullable: true, length: 255 })
   slug: string | null;
-
-  @OneToMany(() => Company, (company) => company.province)
-  companies: Company[];
-
-  @OneToMany(() => District, (district) => district.province)
-  districts: District[];
-
-  @OneToMany(() => Ward, (ward) => ward.province)
-  wards: Ward[];
 }

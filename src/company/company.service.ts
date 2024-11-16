@@ -28,7 +28,7 @@ export class CompanyService {
   ): Promise<Company[]> {
     return this.companyRepository.find({
       where: {
-        province: { id: provinceId },
+        provinceId,
       },
       skip,
       take,
@@ -37,7 +37,7 @@ export class CompanyService {
 
   public async countByProvince(provinceId: number): Promise<number> {
     return this.companyRepository.countBy({
-      province: { id: provinceId },
+      provinceId,
     });
   }
 

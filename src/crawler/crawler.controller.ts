@@ -1,5 +1,10 @@
 import { Controller, Get, OnApplicationBootstrap, Param } from '@nestjs/common';
-import { Client, ClientProxy, Transport } from '@nestjs/microservices';
+import {
+  Client,
+  ClientProxy,
+  MessagePattern,
+  Transport,
+} from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { AppMode, MODE, MQTT_URL } from 'src/_config/dotenv';
@@ -53,7 +58,16 @@ export class CrawlerController implements OnApplicationBootstrap {
 
   @Get('/company/:company')
   public async crawlCompany(@Param('company') company: string) {
-    const html = await firstValueFrom(this.infoRepository.company(company));
-    return this.crawlerService.crawlCompany(html);
+    return this.crawlerService.crawlCompanyByIdOrTaxCodeOrSlug(company);
+  }
+
+  @MessagePattern('crawler/sync-address')
+  public async syncAddress() {
+    return this.crawlerService.updateCompanyAdministrativeUnits();
+  }
+
+  @Get('/trigger-sync-address')
+  public async triggerSyncAddress() {
+    return this.crawlerService.updateCompanyAdministrativeUnits();
   }
 }

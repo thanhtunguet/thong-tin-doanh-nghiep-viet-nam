@@ -3,7 +3,6 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QueryDto } from '../_dtos/query.dto';
 import { Company, District, Province, Ward } from '../_entities';
 import { DivisionService } from './division.service';
-import { QAPairDto } from './dtos/qr-pair';
 
 @ApiTags('Division')
 @Controller('/api/division')
@@ -89,10 +88,5 @@ export class DivisionController {
     @Param('wardId') wardId: number,
   ): Promise<Company[]> {
     return this.divisionService.getCompaniesOfWard(wardId);
-  }
-
-  @Get('/extract-data')
-  public async extractData(): Promise<QAPairDto[]> {
-    return this.divisionService.extractData();
   }
 }

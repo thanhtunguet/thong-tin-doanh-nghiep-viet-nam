@@ -1,15 +1,5 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { CompanyBusinessMapping } from './CompanyBusinessMapping';
-import { District } from './District';
-import { Province } from './Province';
-import { Ward } from './Ward';
 
 @Index('Company_Id_TaxCode_Name_index', ['id', 'taxCode', 'name'], {})
 @Index('Company_pk', ['id'], { unique: true })
@@ -69,11 +59,20 @@ export class Company {
   @Column('nvarchar', { name: 'AlternateName', nullable: true, length: 500 })
   alternateName: string | null;
 
+  @Column('bigint', { name: 'ProvinceId', nullable: true })
+  provinceId: number | null;
+
+  @Column('bigint', { name: 'DistrictId', nullable: true })
+  districtId: number | null;
+
   @Column('bigint', { name: 'MainBusinessId', nullable: true })
   mainBusinessId: number | null;
 
   @Column('nvarchar', { name: 'Slug', nullable: true, length: 2048 })
   slug: string | null;
+
+  @Column('bigint', { name: 'WardId', nullable: true })
+  wardId: number | null;
 
   @Column('nvarchar', {
     name: 'FormattedAddress',
@@ -90,18 +89,6 @@ export class Company {
 
   @Column('nvarchar', { name: 'WardName', nullable: true, length: 255 })
   wardName: string | null;
-
-  @ManyToOne(() => Ward, (ward) => ward.companies)
-  @JoinColumn([{ name: 'WardId', referencedColumnName: 'id' }])
-  ward: Ward;
-
-  @ManyToOne(() => District, (district) => district.companies)
-  @JoinColumn([{ name: 'DistrictId', referencedColumnName: 'id' }])
-  district: District;
-
-  @ManyToOne(() => Province, (province) => province.companies)
-  @JoinColumn([{ name: 'ProvinceId', referencedColumnName: 'id' }])
-  province: Province;
 
   @OneToMany(
     () => CompanyBusinessMapping,
