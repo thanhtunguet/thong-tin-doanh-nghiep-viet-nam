@@ -3,13 +3,20 @@ import {
   NotFoundException,
   OnApplicationBootstrap,
 } from '@nestjs/common';
+import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as cheerio from 'cheerio';
 import { CheerioAPI } from 'cheerio';
 import * as moment from 'moment';
 import { sleep } from 'openai/core';
 import { firstValueFrom } from 'rxjs';
-import { SLEEP_GAP, SLEEP_MIN, SOURCE_URL, WEB_URL } from 'src/_config/dotenv';
+import {
+  MQTT_URL,
+  SLEEP_GAP,
+  SLEEP_MIN,
+  SOURCE_URL,
+  WEB_URL,
+} from 'src/_config/dotenv';
 import {
   Business,
   Company,
@@ -45,6 +52,14 @@ export class CrawlerService implements OnApplicationBootstrap {
   private districtSlugMap: Map<string, District>;
 
   private wardSlugMap: Map<string, Ward>;
+
+  @Client({
+    transport: Transport.MQTT,
+    options: {
+      url: MQTT_URL,
+    },
+  })
+  private client: ClientProxy;
 
   private handleCompanyAddress(company: Company) {
     const address = company.address || '';
@@ -444,7 +459,140 @@ export class CrawlerService implements OnApplicationBootstrap {
     return this.crawlCompany(html);
   }
 
-  public async updateCompanyAdministrativeUnits() {
+  public async updateAddress(company: Company) {
+    const address = company.address || '';
+
+    if (!address) {
+      console.warn(`Company ${company.id} has an empty address.`);
+      return;
+    }
+
+    // Split address into parts
+    const addressParts = address.split(',').map((part) => part.trim());
+
+    const provincePart = addressParts[addressParts.length - 1] || '';
+    const districtPart = addressParts[addressParts.length - 2] || '';
+    const wardPart = addressParts[addressParts.length - 3] || '';
+
+    // Regex patterns
+    const provinceRegex = /(?:Tỉnh|Thành phố|TP)?\s*(.+)/i;
+    const districtRegex = /(?:Quận|Huyện|Thị xã|Thành phố|TP)?\s*(.+)/i;
+    const wardRegex = /(?:Phường|Xã|Thị trấn)?\s*(.+)/i;
+
+    // Extract names
+    const provinceMatch = provincePart.match(provinceRegex);
+    const districtMatch = districtPart.match(districtRegex);
+    const wardMatch = wardPart.match(wardRegex);
+
+    const provinceName = provinceMatch ? provinceMatch[1].trim() : provincePart;
+    const districtName = districtMatch ? districtMatch[1].trim() : districtPart;
+    const wardName = wardMatch ? wardMatch[1].trim() : wardPart;
+
+    // Normalize and slugify names
+    const slugifiedProvinceName = vietnameseSlugify(provinceName);
+    const slugifiedDistrictName = vietnameseSlugify(districtName);
+    const slugifiedWardName = vietnameseSlugify(wardName);
+
+    // Search for province where slug ends with slugifiedProvinceName
+    let province: Province = null;
+    for (const [slug, prov] of this.provinceSlugMap.entries()) {
+      if (slug.endsWith(slugifiedProvinceName)) {
+        province = prov;
+        break;
+      }
+    }
+
+    if (province) {
+      company.provinceId = province.id;
+    } else {
+      console.warn(
+        `Province not found for company ${company.id}, address: ${address}`,
+      );
+    }
+
+    // Search for district
+    let district: District = null;
+    if (province) {
+      for (const [slug, dist] of this.districtSlugMap.entries()) {
+        if (
+          dist.provinceId === province.id &&
+          slug.endsWith(slugifiedDistrictName)
+        ) {
+          district = dist;
+          break;
+        }
+      }
+    } else {
+      // If province not found, search all districts
+      for (const [slug, dist] of this.districtSlugMap.entries()) {
+        if (slug.endsWith(slugifiedDistrictName)) {
+          district = dist;
+          break;
+        }
+      }
+      if (district && !province) {
+        company.provinceId = district.provinceId;
+        province = Object.values(this.provinceSlugMap).find(
+          (p) => p.id === district.provinceId,
+        );
+      }
+    }
+
+    if (district) {
+      company.districtId = district.id;
+    } else {
+      console.warn(
+        `District not found for company ${company.id}, address: ${address}`,
+      );
+    }
+
+    // Search for ward
+    let ward: Ward = null;
+    if (district) {
+      for (const [slug, wd] of this.wardSlugMap.entries()) {
+        if (wd.districtId === district.id && slug.endsWith(slugifiedWardName)) {
+          ward = wd;
+          break;
+        }
+      }
+    } else {
+      // If district not found, search all wards
+      for (const [slug, wd] of this.wardSlugMap.entries()) {
+        if (slug.endsWith(slugifiedWardName)) {
+          ward = wd;
+          break;
+        }
+      }
+      if (ward && !district) {
+        company.districtId = ward.districtId;
+        district = Object.values(this.districtSlugMap).find(
+          (d) => d.id === ward.districtId,
+        );
+        if (district && !province) {
+          company.provinceId = district.provinceId;
+          province = Object.values(this.provinceSlugMap).find(
+            (p) => p.id === district.provinceId,
+          );
+        }
+      }
+    }
+
+    if (ward) {
+      company.wardId = ward.id;
+    } else {
+      console.warn(
+        `Ward not found for company ${company.id}, address: ${address}`,
+      );
+    }
+
+    console.log(
+      `Saved new address for company ${company.id}, provinceId: ${company.provinceId}, districtId: ${company.districtId}, wardId: ${company.wardId}`,
+    );
+
+    return await this.companyRepository.update(company.id, company);
+  }
+
+  public async updateAddresses() {
     const where = [
       { provinceId: IsNull() },
       { districtId: IsNull() },
@@ -470,143 +618,8 @@ export class CrawlerService implements OnApplicationBootstrap {
       }
 
       for (const company of companies) {
-        const address = company.address || '';
-
-        if (!address) {
-          console.warn(`Company ${company.id} has an empty address.`);
-          continue;
-        }
-
-        // Split address into parts
-        const addressParts = address.split(',').map((part) => part.trim());
-
-        const provincePart = addressParts[addressParts.length - 1] || '';
-        const districtPart = addressParts[addressParts.length - 2] || '';
-        const wardPart = addressParts[addressParts.length - 3] || '';
-
-        // Regex patterns
-        const provinceRegex = /(?:Tỉnh|Thành phố|TP)?\s*(.+)/i;
-        const districtRegex = /(?:Quận|Huyện|Thị xã|Thành phố|TP)?\s*(.+)/i;
-        const wardRegex = /(?:Phường|Xã|Thị trấn)?\s*(.+)/i;
-
-        // Extract names
-        const provinceMatch = provincePart.match(provinceRegex);
-        const districtMatch = districtPart.match(districtRegex);
-        const wardMatch = wardPart.match(wardRegex);
-
-        const provinceName = provinceMatch
-          ? provinceMatch[1].trim()
-          : provincePart;
-        const districtName = districtMatch
-          ? districtMatch[1].trim()
-          : districtPart;
-        const wardName = wardMatch ? wardMatch[1].trim() : wardPart;
-
-        // Normalize and slugify names
-        const slugifiedProvinceName = vietnameseSlugify(provinceName);
-        const slugifiedDistrictName = vietnameseSlugify(districtName);
-        const slugifiedWardName = vietnameseSlugify(wardName);
-
-        // Search for province where slug ends with slugifiedProvinceName
-        let province: Province = null;
-        for (const [slug, prov] of this.provinceSlugMap.entries()) {
-          if (slug.endsWith(slugifiedProvinceName)) {
-            province = prov;
-            break;
-          }
-        }
-
-        if (province) {
-          company.provinceId = province.id;
-        } else {
-          console.warn(
-            `Province not found for company ${company.id}, address: ${address}`,
-          );
-        }
-
-        // Search for district
-        let district: District = null;
-        if (province) {
-          for (const [slug, dist] of this.districtSlugMap.entries()) {
-            if (
-              dist.provinceId === province.id &&
-              slug.endsWith(slugifiedDistrictName)
-            ) {
-              district = dist;
-              break;
-            }
-          }
-        } else {
-          // If province not found, search all districts
-          for (const [slug, dist] of this.districtSlugMap.entries()) {
-            if (slug.endsWith(slugifiedDistrictName)) {
-              district = dist;
-              break;
-            }
-          }
-          if (district && !province) {
-            company.provinceId = district.provinceId;
-            province = Object.values(this.provinceSlugMap).find(
-              (p) => p.id === district.provinceId,
-            );
-          }
-        }
-
-        if (district) {
-          company.districtId = district.id;
-        } else {
-          console.warn(
-            `District not found for company ${company.id}, address: ${address}`,
-          );
-        }
-
-        // Search for ward
-        let ward: Ward = null;
-        if (district) {
-          for (const [slug, wd] of this.wardSlugMap.entries()) {
-            if (
-              wd.districtId === district.id &&
-              slug.endsWith(slugifiedWardName)
-            ) {
-              ward = wd;
-              break;
-            }
-          }
-        } else {
-          // If district not found, search all wards
-          for (const [slug, wd] of this.wardSlugMap.entries()) {
-            if (slug.endsWith(slugifiedWardName)) {
-              ward = wd;
-              break;
-            }
-          }
-          if (ward && !district) {
-            company.districtId = ward.districtId;
-            district = Object.values(this.districtSlugMap).find(
-              (d) => d.id === ward.districtId,
-            );
-            if (district && !province) {
-              company.provinceId = district.provinceId;
-              province = Object.values(this.provinceSlugMap).find(
-                (p) => p.id === district.provinceId,
-              );
-            }
-          }
-        }
-
-        if (ward) {
-          company.wardId = ward.id;
-        } else {
-          console.warn(
-            `Ward not found for company ${company.id}, address: ${address}`,
-          );
-        }
-
-        console.log(
-          `Saved new address for company ${company.id}, provinceId: ${company.provinceId}, districtId: ${company.districtId}, wardId: ${company.wardId}`,
-        );
-
-        await this.companyRepository.update(company.id, company);
+        await this.client.emit('crawler/sync-address', company);
+        await sleep(Math.random() * SLEEP_GAP + SLEEP_MIN);
       }
     }
   }

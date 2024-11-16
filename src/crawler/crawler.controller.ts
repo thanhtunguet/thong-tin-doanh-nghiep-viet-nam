@@ -3,6 +3,7 @@ import {
   Client,
   ClientProxy,
   MessagePattern,
+  Payload,
   Transport,
 } from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -62,12 +63,25 @@ export class CrawlerController implements OnApplicationBootstrap {
   }
 
   @MessagePattern('crawler/sync-address')
-  public async syncAddress() {
-    return this.crawlerService.updateCompanyAdministrativeUnits();
+  public async syncAddress(@Payload() company: Company) {
+    try {
+      await this.crawlerService.updateAddress(company);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @MessagePattern('crawler/sync-addresses')
+  public async syncAdministrativeUnits() {
+    return this.crawlerService.updateAddresses();
   }
 
   @Get('/trigger-sync-address')
+  @ApiResponse({
+    type: String,
+  })
   public async triggerSyncAddress() {
-    return this.crawlerService.updateCompanyAdministrativeUnits();
+    await this.client.emit('crawler/sync-addresses', {});
+    return 'All jobs have been triggered';
   }
 }
