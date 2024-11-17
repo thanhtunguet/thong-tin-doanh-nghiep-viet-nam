@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { config } from 'dotenv';
 import { OpenaiService } from './openai.service';
+
+config();
 
 describe('OpenaiService', () => {
   let service: OpenaiService;
@@ -10,6 +13,11 @@ describe('OpenaiService', () => {
     }).compile();
 
     service = module.get<OpenaiService>(OpenaiService);
+
+    const result = await service.formatAddress(
+      '156/13/2G Lê Đình Cẩn, Phường Tân Tạo, Quận Bình Tân, TP Hồ Chí Minh',
+    );
+    console.log(result);
   });
 
   it('should be defined', () => {

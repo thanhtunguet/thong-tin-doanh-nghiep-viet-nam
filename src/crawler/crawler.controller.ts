@@ -80,7 +80,7 @@ export class CrawlerController implements OnApplicationBootstrap {
   @ApiResponse({
     type: String,
   })
-  public async triggerSyncAddress() {
+  public async triggerSyncAddresses() {
     await this.client.emit('crawler/sync-addresses', {});
     return 'All jobs have been triggered';
   }
