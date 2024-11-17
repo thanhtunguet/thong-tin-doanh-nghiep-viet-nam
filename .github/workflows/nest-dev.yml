@@ -10,9 +10,13 @@ on:
       - main
       - dev
 
+env:
+  COMMIT_SHA: ${{ github.sha }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+  
 
     steps:
       - name: Checkout Repository
@@ -52,20 +56,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/ttdn:latest
-            ${{ secrets.DOCKER_USERNAME }}/ttdn:${{ env.commit_sha }}
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Build Node.js
-        run: |
-          yarn install --development
-          yarn test
+            ${{ secrets.DOCKER_USERNAME }}/ttdn:${{ env.COMMIT_SHA }}

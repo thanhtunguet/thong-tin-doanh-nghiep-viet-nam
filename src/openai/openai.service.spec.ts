@@ -17,7 +17,8 @@ describe('OpenaiService', () => {
     const result = await service.formatAddress(
       '156/13/2G Lê Đình Cẩn, Phường Tân Tạo, Quận Bình Tân, TP Hồ Chí Minh',
     );
-    console.log(result);
+    const obj = JSON.parse(result);
+    expect(obj.province.endsWith('Hồ Chí Minh')).toBe(true);
   });
 
   it('should be defined', () => {
