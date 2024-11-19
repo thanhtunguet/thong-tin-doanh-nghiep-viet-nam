@@ -30,6 +30,7 @@ import { splitArrayByLength } from 'src/_helpers/array';
 import { vietnameseSlugify } from 'src/_helpers/slugify';
 import { InfoRepository } from 'src/_repositories/info-repository';
 import { In, IsNull, Repository } from 'typeorm';
+import { CrawlerAction } from './crawler.actions';
 
 @Injectable()
 export class CrawlerService implements OnApplicationBootstrap {
@@ -129,9 +130,9 @@ export class CrawlerService implements OnApplicationBootstrap {
     private readonly businessRepository: Repository<Business>,
     @InjectRepository(ProvinceGroup)
     private readonly provinceGroupRepository: Repository<ProvinceGroup>,
-
     @InjectRepository(CompanyBusinessMapping)
     private readonly companyBusinessMappingRepository: Repository<CompanyBusinessMapping>,
+
     private readonly infoRepository: InfoRepository,
   ) {}
 
@@ -618,7 +619,23 @@ export class CrawlerService implements OnApplicationBootstrap {
       }
 
       for (const company of companies) {
-        await this.client.emit('crawler/sync-address', company);
+        await this.client.emit(CrawlerAction.SYNC_ADDRESS, company);
+        await sleep(Math.random() * SLEEP_GAP + SLEEP_MIN);
+      }
+    }
+  }
+
+  public async updateAllCompanies() {
+    const count = await this.companyRepository.count();
+    const CHUNK = 100;
+    for (let i = 0; i < count; i += CHUNK) {
+      const companies = await this.companyRepository.find({
+        skip: i * CHUNK,
+        take: CHUNK,
+      });
+
+      for (const company of companies) {
+        await this.client.emit(CrawlerAction.SYNC_COMPANY, company.id);
         await sleep(Math.random() * SLEEP_GAP + SLEEP_MIN);
       }
     }

@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { AppMode, MODE, MQTT_URL } from 'src/_config/dotenv';
 import { Company } from 'src/_entities';
 import { InfoRepository } from 'src/_repositories/info-repository';
+import { CrawlerAction } from './crawler.actions';
 import { CrawlerService } from './crawler.service';
 import { ProvinceGroupDto } from './dtos/province-group.dto';
 
@@ -62,7 +63,7 @@ export class CrawlerController implements OnApplicationBootstrap {
     return this.crawlerService.crawlCompanyByIdOrTaxCodeOrSlug(company);
   }
 
-  @MessagePattern('crawler/sync-address')
+  @MessagePattern(CrawlerAction.SYNC_ADDRESS)
   public async syncAddress(@Payload() company: Company) {
     try {
       await this.crawlerService.updateAddress(company);
@@ -71,7 +72,7 @@ export class CrawlerController implements OnApplicationBootstrap {
     }
   }
 
-  @MessagePattern('crawler/sync-addresses')
+  @MessagePattern(CrawlerAction.SYNC_ALL_ADDRESSES)
   public async syncAdministrativeUnits() {
     return this.crawlerService.updateAddresses();
   }
@@ -81,7 +82,26 @@ export class CrawlerController implements OnApplicationBootstrap {
     type: String,
   })
   public async triggerSyncAddresses() {
-    await this.client.emit('crawler/sync-addresses', {});
+    await this.client.emit(CrawlerAction.SYNC_ALL_ADDRESSES, {});
     return 'All jobs have been triggered';
+  }
+
+  @MessagePattern(CrawlerAction.SYNC_ALL_COMPANIES)
+  public async syncAllCompanies() {
+    return this.crawlerService.updateAllCompanies();
+  }
+
+  @Get('/trigger-sync-company')
+  @ApiResponse({
+    type: String,
+  })
+  public async triggerSyncCompanies() {
+    await this.client.emit(CrawlerAction.SYNC_ALL_COMPANIES, {});
+    return 'All jobs have been triggered';
+  }
+
+  @MessagePattern(CrawlerAction.SYNC_COMPANY)
+  public async syncCompany(@Payload() company: string) {
+    return this.crawlerService.crawlCompanyByIdOrTaxCodeOrSlug(company);
   }
 }

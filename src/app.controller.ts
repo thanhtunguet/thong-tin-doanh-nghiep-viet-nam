@@ -86,6 +86,7 @@ export class AppController {
   @Get('/thong-tin/:company.html')
   @ApiProduces('text/html')
   public async proxyCompany(
+    @Param('company') company: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -98,6 +99,7 @@ export class AppController {
   @Get('/:province')
   @ApiProduces('text/html')
   public async proxyProvince(
+    @Param('province') province: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -110,6 +112,8 @@ export class AppController {
   @Get('/:province/trang-:page/')
   @ApiProduces('text/html')
   public async proxyProvincePage(
+    @Param('province') province: string,
+    @Param('page') page: number,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -119,9 +123,11 @@ export class AppController {
     });
   }
 
-  @Get('/:province/:district')
+  @Get('/:province/:district/')
   @ApiProduces('text/html')
   public async proxyDistrict(
+    @Param('province') province: string,
+    @Param('district') district: string,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
@@ -134,6 +140,9 @@ export class AppController {
   @Get('/:province/:district/trang-:page/')
   @ApiProduces('text/html')
   public async proxyDistrictPage(
+    @Param('province') province: string,
+    @Param('district') district: string,
+    @Param('page') page: number,
     @Req() request: Request,
     @Res() response: Response,
     @Next() next: NextFunction,
