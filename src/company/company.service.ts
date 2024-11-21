@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Company } from 'src/_entities';
 import { Repository } from 'typeorm';
+import { CompanyQueryDto } from './dtos/company-query.dto';
 
 @Injectable()
 export class CompanyService {
@@ -10,10 +11,21 @@ export class CompanyService {
     private readonly companyRepository: Repository<Company>,
   ) {}
 
-  public async list(skip: number, take: number): Promise<Company[]> {
+  public async list(query: CompanyQueryDto): Promise<Company[]> {
     return this.companyRepository.find({
-      skip,
-      take,
+      skip: query.skip,
+      take: query.take,
+      where: [
+        {
+          provinceId: query.provinceId,
+        },
+        {
+          districtId: query.districtId,
+        },
+        {
+          wardId: query.wardId,
+        },
+      ],
     });
   }
 

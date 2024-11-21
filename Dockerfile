@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
 WORKDIR /app
-COPY dist/ ./dist/
+COPY dist/ dvhc/ ./
 COPY package.json yarn.lock ./
 RUN yarn install
 RUN npx webdriver-manager update --chrome

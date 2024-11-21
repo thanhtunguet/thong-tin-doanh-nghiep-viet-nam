@@ -74,6 +74,9 @@ export class Company {
   @Column('bigint', { name: 'WardId', nullable: true })
   wardId: number | null;
 
+  @Column('bit', { name: 'IsCrawledFull', nullable: true, default: false })
+  isCrawledFull: boolean;
+
   @Column('nvarchar', {
     name: 'FormattedAddress',
     nullable: true,

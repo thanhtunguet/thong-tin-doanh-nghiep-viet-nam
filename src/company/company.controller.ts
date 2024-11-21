@@ -1,7 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryDto } from 'src/_dtos/query.dto';
 import { CompanyService } from './company.service';
+import { CompanyQueryDto } from './dtos/company-query.dto';
 
 @ApiTags('Company')
 @Controller('/api/company')
@@ -9,8 +10,11 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Get('/')
-  public async list(@Query('skip') skip = 0, @Query('take') take = 10) {
-    return this.companyService.list(skip, take);
+  @ApiBody({
+    type: CompanyQueryDto,
+  })
+  public async list(@Query() query: CompanyQueryDto) {
+    return this.companyService.list(query);
   }
 
   @Get('/count')
